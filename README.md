@@ -1,4 +1,4 @@
-Android Library with Sample Project
+Android Location Library
 ====
 
 What's this?
@@ -66,7 +66,7 @@ For stopping the location just use the stop method.
 ````java
 MbLocationService.with(this).stopLocationUpdates();
 ````
-      
+ ### Utility     
                 
 ````java      
 // To get the human readable address

@@ -28,6 +28,7 @@ public class MbLocationUtil {
     public static final int LOCATION_PLAY_SERVICE_ERROR = 302;
     public static final int LOCATION_CONNECTION_SUSPENDED_ERROR = 303;
     public static final int LOCATION_CONNECTION_FAILED_ERROR = 304;
+    public static final int LOCATION_GPS_DISABLED_ERROR = 305;
 
     public static final int LOCATION_INTERVAL = 6000 * 10;
     public static final int LOCATION_FASTEST_INTERVAL = 1000 * 10;

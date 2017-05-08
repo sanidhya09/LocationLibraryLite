@@ -6,7 +6,9 @@ package com.magicdroid.magiclocationlib;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -35,7 +37,10 @@ public class MbLocationService implements GoogleApiClient.ConnectionCallbacks, G
 
     private MbLocationService(Context mContext) {
         this.mContext = mContext;
+        init();
+    }
 
+    private void init() {
         mGoogleApiClient = new GoogleApiClient.Builder(mContext)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -43,7 +48,6 @@ public class MbLocationService implements GoogleApiClient.ConnectionCallbacks, G
                 .build();
 
         mLocationRequest = new LocationRequest();
-
     }
 
     public static MbLocationService with(Context context) {
@@ -80,9 +84,14 @@ public class MbLocationService implements GoogleApiClient.ConnectionCallbacks, G
         if (smallest_displacement > 0)
             mLocationRequest.setSmallestDisplacement(smallest_displacement);
 
+        connectApiClient();
+
+    }
+
+    private void connectApiClient() {
         final MbLocationUtil mbLocationUtil = MbLocationUtil.with(mContext);
-        boolean googlePlayServicesAvailable = mbLocationUtil.isGooglePlayServicesAvailable();
-        boolean anyProviderAvailable = mbLocationUtil.isAnyProviderAvailable();
+        final boolean googlePlayServicesAvailable = mbLocationUtil.isGooglePlayServicesAvailable();
+        final boolean anyProviderAvailable = mbLocationUtil.isAnyProviderAvailable();
 
         if (googlePlayServicesAvailable) {
             if (anyProviderAvailable) {
@@ -132,10 +141,12 @@ public class MbLocationService implements GoogleApiClient.ConnectionCallbacks, G
     }
 
     private void startLocationUpdates() {
+
         if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+
     }
 
     // To stop the location updates.
@@ -149,4 +160,6 @@ public class MbLocationService implements GoogleApiClient.ConnectionCallbacks, G
     public void setOneFix(boolean isOneFix) {
         this.isOneFix = isOneFix;
     }
+
+
 }

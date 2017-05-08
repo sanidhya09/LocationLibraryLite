@@ -1,4 +1,4 @@
-package com.magicdroid.magiclocation;
+package com.magicdroid.magiclocationlib;
 
 
 import android.Manifest;
@@ -14,7 +14,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -27,10 +26,8 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.magicdroid.magiclocationlib.MbLocationError;
-import com.magicdroid.magiclocationlib.MbLocationListener;
-import com.magicdroid.magiclocationlib.MbLocationService;
-import com.magicdroid.magiclocationlib.MbLocationUtil;
+
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 /**
  * Created by sanidhya on 5/5/17.
@@ -50,23 +47,23 @@ public class MbLocationServices {
         locationResolverFragment = LocationResolverFragment.from(fragmentActivity.getSupportFragmentManager());
     }
 
-    void init(final MbLocationListener mbLocationListener) {
+    public void init(final MbLocationListener mbLocationListener) {
         locationResolverFragment.executeService(mbLocationListener);
     }
 
-    static MbLocationServices with(FragmentActivity fragmentActivity) {
+    public static MbLocationServices with(FragmentActivity fragmentActivity) {
         return new MbLocationServices(fragmentActivity);
     }
 
-    void setInterval(long interval) {
+    public void setInterval(long interval) {
         MbLocationServices.interval = interval;
     }
 
-    void setFastestInterval(long fastestInterval) {
+    public void setFastestInterval(long fastestInterval) {
         MbLocationServices.fastestInterval = fastestInterval;
     }
 
-    void setPriority(int priority) {
+    public void setPriority(int priority) {
         MbLocationServices.priority = priority;
     }
 
@@ -85,12 +82,13 @@ public class MbLocationServices {
 
     // To get the location only once. Displacement will be ignored.
     public void setOneFix(boolean isOneFix) {
-        this.isOneFix = isOneFix;
+        MbLocationServices.isOneFix = isOneFix;
     }
 
     public static class LocationResolverFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
         private static final String TAG = "LocationSettings";
         private static final int LOCATION_SETTINGS_REQUEST = 21;
+        private static final int REQUEST_PERMISSION_LOCATION = 22;
         private GoogleApiClient mGoogleApiClient;
         private LocationRequest mLocationRequest;
         private MbLocationListener mbLocationListener;
@@ -132,7 +130,7 @@ public class MbLocationServices {
 
         @Override
         public void onConnected(@Nullable Bundle bundle) {
-            startLocationUpdates();
+            checkLocationPermission();
         }
 
         @Override
@@ -173,26 +171,40 @@ public class MbLocationServices {
             if (expirationTime > 0)
                 mLocationRequest.setExpirationDuration(expirationTime);
 
-            mGoogleApiClient.connect();
+
             if (mGoogleApiClient.isConnected()) {
-                startLocationUpdates();
+                checkLocationPermission();
+            } else {
+                mGoogleApiClient.connect();
             }
 
         }
 
-        private void startLocationUpdates() {
+        private void checkLocationPermission() {
+            if (ActivityCompat.checkSelfPermission(getActivity(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                startLocationUpdates();
+            } else if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), ACCESS_FINE_LOCATION)) {
+                // We've been denied once before. Explain why we need the permission, then ask again.
+                mbLocationListener.onError(new MbLocationError(MbLocationUtil.LOCATION_PERMISSION_ERROR, "Location Permission not available."));
+                requestPermissions(new String[]{ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_LOCATION);
+            } else {
+                // We've never asked. Just do it.
+                requestPermissions(new String[]{ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_LOCATION);
+            }
+        }
 
+        private void startLocationUpdates() {
             final MbLocationUtil mbLocationUtil = MbLocationUtil.with(getActivity());
             final boolean anyProviderAvailable = mbLocationUtil.isAnyProviderAvailable();
             if (anyProviderAvailable) {
-                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(getActivity(), ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     mbLocationListener.onError(new MbLocationError(MbLocationUtil.LOCATION_PERMISSION_ERROR, "Location Permission not available."));
                     return;
                 }
                 LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
             } else {
                 // Location Provider not available eg. GPS
-                //mbLocationListener.onError(new MbLocationError(MbLocationUtil.LOCATION_PROVIDER_ERROR, "Location provider not enabled. Please check GPS."));
+                // mbLocationListener.onError(new MbLocationError(MbLocationUtil.LOCATION_PROVIDER_ERROR, "Location provider not enabled. Please check GPS."));
                 LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                         .addLocationRequest(mLocationRequest);
 
@@ -218,13 +230,9 @@ public class MbLocationServices {
                                 try {
                                     startIntentSenderForResult(status.getResolution().getIntentSender(), LOCATION_SETTINGS_REQUEST, null, 0, 0, 0, null);
                                 } catch (IntentSender.SendIntentException e) {
-                                    // Ignore the error.
+                                    e.printStackTrace();
                                 }
-//                                    status.startResolutionForResult(getActivity(), LOCATION_SETTINGS_REQUEST);
-//                                } catch (IntentSender.SendIntentException e) {
-//                                    // Ignore the error.
-//                                    e.printStackTrace();
-                                //  }
+
                                 break;
                             case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                                 // Location settings are not satisfied. However, we have no way to fix the
@@ -234,11 +242,23 @@ public class MbLocationServices {
                     }
                 });
             }
+
+
         }
 
         public void stopLocationUpdates() {
             LocationServices.FusedLocationApi.removeLocationUpdates(
                     mGoogleApiClient, this);
+        }
+
+        @Override
+        public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+            if (requestCode == REQUEST_PERMISSION_LOCATION && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startLocationUpdates();
+            } else {
+                // We were not granted permission this time, so don't try to show the contact picker
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            }
         }
     }
 

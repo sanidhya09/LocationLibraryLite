@@ -8,6 +8,7 @@ import android.widget.Toast;
 import com.google.android.gms.location.LocationRequest;
 import com.magicdroid.magiclocationlib.MbLocationError;
 import com.magicdroid.magiclocationlib.MbLocationListener;
+import com.magicdroid.magiclocationlib.MbLocationServices;
 import com.magicdroid.magiclocationlib.MbLocationUtil;
 
 public class MainActivity extends AppCompatActivity {

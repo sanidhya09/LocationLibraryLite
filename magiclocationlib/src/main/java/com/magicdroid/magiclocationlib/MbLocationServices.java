@@ -3,6 +3,7 @@ package com.magicdroid.magiclocationlib;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -34,50 +35,72 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
  */
 
 public class MbLocationServices {
-    private static long interval = MbLocationUtil.LOCATION_INTERVAL; //Default
-    private static long fastestInterval = MbLocationUtil.LOCATION_FASTEST_INTERVAL; // Default
-    private static int priority = LocationRequest.PRIORITY_HIGH_ACCURACY; // Default
-    private static long displacement = MbLocationUtil.LOCATION_DISPLACEMENT; // 0 meters OFF
-    private static long expirationTime = 0; // 0 minutes , No Expiration
+    private static long INTERVAL = MbLocationUtil.LOCATION_INTERVAL; //Default
+    private static long FASTESTINTERVAL = MbLocationUtil.LOCATION_FASTEST_INTERVAL; // Default
+    private static int PRIORITY = LocationRequest.PRIORITY_HIGH_ACCURACY; // Default
+    private static int DISPLACEMENT = MbLocationUtil.LOCATION_DISPLACEMENT; // 0 meters OFF
+    private static long EXPIRATIONTIME = 0; // 0 minutes , No Expiration
     private static boolean isOneFix;
 
-    private final LocationResolverFragment locationResolverFragment;
+    private final LocationResolverFragment mLocationResolverFragment;
+    private Context mContext;
 
     private MbLocationServices(FragmentActivity fragmentActivity) {
-        locationResolverFragment = LocationResolverFragment.from(fragmentActivity.getSupportFragmentManager());
+        mLocationResolverFragment = LocationResolverFragment.from(fragmentActivity.getSupportFragmentManager());
+    }
+
+    private MbLocationServices(Context mContext) {
+        this.mContext = mContext;
+        mLocationResolverFragment = null;
+
     }
 
     public void init(final MbLocationListener mbLocationListener) {
-        locationResolverFragment.executeService(mbLocationListener);
+        if (mLocationResolverFragment == null) {
+            MbLocationService mbLocationService = MbLocationService.with(mContext);
+
+            mbLocationService.setFastestInterval(FASTESTINTERVAL);
+            mbLocationService.setInterval(INTERVAL);
+            mbLocationService.setPriority(PRIORITY);
+            mbLocationService.setOneFix(isOneFix);
+            mbLocationService.setDisplacement(DISPLACEMENT);
+
+            mbLocationService.executeService(mbLocationListener);
+        } else
+            mLocationResolverFragment.executeService(mbLocationListener);
     }
 
     public static MbLocationServices with(FragmentActivity fragmentActivity) {
         return new MbLocationServices(fragmentActivity);
     }
 
+    public static MbLocationServices with(Context fragmentActivity) {
+        return new MbLocationServices(fragmentActivity);
+    }
+
     public void setInterval(long interval) {
-        MbLocationServices.interval = interval;
+        MbLocationServices.INTERVAL = interval;
     }
 
     public void setFastestInterval(long fastestInterval) {
-        MbLocationServices.fastestInterval = fastestInterval;
+        MbLocationServices.FASTESTINTERVAL = fastestInterval;
     }
 
     public void setPriority(int priority) {
-        MbLocationServices.priority = priority;
+        MbLocationServices.PRIORITY = priority;
     }
 
-    void setDisplacement(int displacement) {
-        MbLocationServices.displacement = displacement;
+    public void setDisplacement(int displacement) {
+        MbLocationServices.DISPLACEMENT = displacement;
     }
 
-    void setExpiration(long expiration) {
-        MbLocationServices.expirationTime = expiration;
+    public void setExpiration(long expiration) {
+        MbLocationServices.EXPIRATIONTIME = expiration;
     }
 
     // To stop the location updates.
-    void stopLocationUpdates() {
-        locationResolverFragment.stopLocationUpdates();
+    public void stopLocationUpdates() {
+        mLocationResolverFragment.stopLocationUpdates();
     }
 
     // To get the location only once. Displacement will be ignored.
@@ -161,15 +184,15 @@ public class MbLocationServices {
                     .build();
 
             mLocationRequest = new LocationRequest();
-            mLocationRequest.setInterval(interval);
-            mLocationRequest.setFastestInterval(fastestInterval);
-            mLocationRequest.setPriority(priority);
+            mLocationRequest.setInterval(INTERVAL);
+            mLocationRequest.setFastestInterval(FASTESTINTERVAL);
+            mLocationRequest.setPriority(PRIORITY);
 
-            if (displacement > 0)
-                mLocationRequest.setSmallestDisplacement(displacement);
+            if (DISPLACEMENT > 0)
+                mLocationRequest.setSmallestDisplacement(DISPLACEMENT);
 
-            if (expirationTime > 0)
-                mLocationRequest.setExpirationDuration(expirationTime);
+            if (EXPIRATIONTIME > 0)
+                mLocationRequest.setExpirationDuration(EXPIRATIONTIME);
 
 
             if (mGoogleApiClient.isConnected()) {

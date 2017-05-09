@@ -10,7 +10,7 @@ Benefits :
 ----
 
 1. Reduces Code Boilerplate.
-2. Can be used with any context providers like Activity, Services, Fragment, AppCompatActivity, Dialogs, etc.
+2. Can be used with any mContext providers like Activity, Services, Fragment, AppCompatActivity, Dialogs, etc.
 3. Very light library size < 10kb.
 
 Library Usage :
@@ -70,24 +70,24 @@ MbLocationService.with(this).stopLocationUpdates();
                 
 ````java      
 // To get the human readable address
-Address address = MbLocationUtil.with(context).getAddressFromLocation(location.getLatitude(), location.getLongitude());
+Address address = MbLocationUtil.with(mContext).getAddressFromLocation(location.getLatitude(), location.getLongitude());
         
 // Check if the location services are enabled
-MbLocationUtil.with(context).locationServicesEnabled();
+MbLocationUtil.with(mContext).locationServicesEnabled();
         
 // Check if any provider (network or gps) is enabled
-MbLocationUtil.with(context).isAnyProviderAvailable();
+MbLocationUtil.with(mContext).isAnyProviderAvailable();
         
 // Check if GPS is available
-MbLocationUtil.with(context).isGpsAvailable();
+MbLocationUtil.with(mContext).isGpsAvailable();
         
 // Check if Network is available
-MbLocationUtil.with(context).isNetworkAvailable();
+MbLocationUtil.with(mContext).isNetworkAvailable();
         
 // Check if the passive provider is available
-MbLocationUtil.with(context).isPassiveAvailable();
+MbLocationUtil.with(mContext).isPassiveAvailable();
         
 // Check if the location is mocked
-MbLocationUtil.with(context).isMockSettingEnabled();
+MbLocationUtil.with(mContext).isMockSettingEnabled();
 ````
 

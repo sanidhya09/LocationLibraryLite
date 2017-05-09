@@ -6,9 +6,7 @@ package com.magicdroid.magiclocationlib;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
-import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -22,13 +20,15 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-public class MbLocationService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+class MbLocationService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     @SuppressLint("StaticFieldLeak")
     private static volatile MbLocationService instance;
-    private static long interval = MbLocationUtil.LOCATION_INTERVAL; //Default
-    private static long fastestInterval = MbLocationUtil.LOCATION_FASTEST_INTERVAL; // Default
-    private static int priority = LocationRequest.PRIORITY_HIGH_ACCURACY; // Default
-    private static long smallest_displacement = MbLocationUtil.LOCATION_DISPLACEMENT; // 0 meters OFF
+    private static long INTERVAL = MbLocationUtil.LOCATION_INTERVAL; //Default
+    private static long fastestINTERVAL = MbLocationUtil.LOCATION_FASTEST_INTERVAL; // Default
+    private static int PRIORITY = LocationRequest.PRIORITY_HIGH_ACCURACY; // Default
+    private static long smallestDisplacemnt = MbLocationUtil.LOCATION_DISPLACEMENT; // 0 meters OFF
+    private static long EXPIRATIONTIME = 0; // 0 minutes , No Expiration
+
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Context mContext;
@@ -60,29 +60,36 @@ public class MbLocationService implements GoogleApiClient.ConnectionCallbacks, G
     }
 
     public void setInterval(long interval) {
-        MbLocationService.interval = interval;
+        MbLocationService.INTERVAL = interval;
     }
 
     public void setFastestInterval(long fastestInterval) {
-        MbLocationService.fastestInterval = fastestInterval;
+        MbLocationService.fastestINTERVAL = fastestInterval;
     }
 
     public void setPriority(int priority) {
-        MbLocationService.priority = priority;
+        MbLocationService.PRIORITY = priority;
     }
 
     public void setDisplacement(int displacement) {
-        smallest_displacement = displacement;
+        smallestDisplacemnt = displacement;
+    }
+
+    public void setExpiration(long expiration) {
+        MbLocationService.EXPIRATIONTIME = expiration;
     }
 
     public void executeService(final MbLocationListener mbLocationListener) {
         this.mbLocationListener = mbLocationListener;
 
-        mLocationRequest.setInterval(interval);
-        mLocationRequest.setFastestInterval(fastestInterval);
-        mLocationRequest.setPriority(priority);
-        if (smallest_displacement > 0)
-            mLocationRequest.setSmallestDisplacement(smallest_displacement);
+        mLocationRequest.setInterval(INTERVAL);
+        mLocationRequest.setFastestInterval(fastestINTERVAL);
+        mLocationRequest.setPriority(PRIORITY);
+        if (smallestDisplacemnt > 0)
+            mLocationRequest.setSmallestDisplacement(smallestDisplacemnt);
+
+        if (EXPIRATIONTIME > 0)
+            mLocationRequest.setExpirationDuration(EXPIRATIONTIME);
 
         connectApiClient();
 

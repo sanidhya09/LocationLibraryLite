@@ -9,9 +9,27 @@ Get lattitude and longitude from google fused Api in just few lines of code. It 
 Benefits :
 ----
 
-1. Reduces Code Boilerplate.
-2. Can be used with any mContext providers like Activity, Services, Fragment, AppCompatActivity, Dialogs, etc.
-3. Very light library size < 10kb.
+1. Reduces Code Boilerplate and saves development time.
+
+2. Very light size < 10kb.
+
+3. Get Current Location.
+
+4. Get Periodic Location.
+
+5. Checks for Play Services.
+
+6. Checks for location on/off.
+
+7. In-app GPS enable dialog.
+
+8. Inbuilt Location Permission Request.
+
+9. Single errorCallback for most of the errors.
+
+10. Can be used with any context providers like Activity, Services, Fragment, AppCompatActivity, Dialogs, etc.
+
+11. Get Address of a location.
 
 Library Usage :
 ----
@@ -23,40 +41,40 @@ For getting current location one time:
 
 ````java
 
-   final MbLocationService mbLocationService = MbLocationService.with(this);
+    MbLocationServices mbLocationServices = MbLocationServices.with(this);
 
-        // Optional Params
-        mbLocationService.setFastestInterval(1000 * 5);
-        mbLocationService.setInterval(1000 * 10);
-        mbLocationService.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mbLocationService.setOneFix(true);
-        // mbLocationService.setDisplacement(15); // Default is OFF : 0
-        
-        mbLocationService.executeService(new MbLocationListener() {
-            @Override
-            public void onLocationUpdate(Location location) {
-                Toast.makeText(MainActivity.this, "Latitude=" + location.getLatitude() + ", Longitude=" + location.getLongitude(), Toast.LENGTH_LONG).show();
-            }
+           // Optional Params
+           mbLocationServices.setFastestInterval(1000 * 5);
+           mbLocationServices.setInterval(1000 * 10);
+           mbLocationServices.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+           mbLocationServices.setOneFix(true);
 
-            @Override
-            public void onError(MbLocationError mbLocationError) {
-                Toast.makeText(MainActivity.this, "Error=" + mbLocationError.message, Toast.LENGTH_LONG).show();
-                switch (mbLocationError.errorCode) {
-                    case MbLocationUtil.LOCATION_PLAY_SERVICE_ERROR:
-                        // Do your project specific stuff here..
-                        break;
-                    case MbLocationUtil.LOCATION_PROVIDER_ERROR:
-                        // Do your project specific stuff here..
-                        break;
-                }
-            }
-        });
+           mbLocationServices.init(new MbLocationListener() {
+               @Override
+               public void onLocationUpdate(Location location) {
+                   Toast.makeText(MainActivity.this, "Latitude=" + location.getLatitude() + ", Longitude=" + location.getLongitude(), Toast.LENGTH_LONG).show();
+               }
+
+               @Override
+               public void onError(MbLocationError errorCode) {
+                   Toast.makeText(MainActivity.this, "Error=" + errorCode.message, Toast.LENGTH_LONG).show();
+                   switch (errorCode.errorCode) {
+                       case MbLocationUtil.LOCATION_PLAY_SERVICE_ERROR:
+                           // Do your project specific stuff here..
+                           break;
+                       case MbLocationUtil.LOCATION_PROVIDER_ERROR:
+                           // Do your project specific stuff here..
+                           break;
+                   }
+
+               }
+           });
 ````
 
 For getting current location (Periodic):
 
 ````java
-      mbLocationService.setOneFix(false);
+      mbLocationServices.setOneFix(false);
 ````
 
 ### Stopping
@@ -64,7 +82,7 @@ For getting current location (Periodic):
 For stopping the location just use the stop method.
 
 ````java
-MbLocationService.with(this).stopLocationUpdates();
+MbLocationServices.with(this).stopLocationUpdates();
 ````
  ### Utility     
                 

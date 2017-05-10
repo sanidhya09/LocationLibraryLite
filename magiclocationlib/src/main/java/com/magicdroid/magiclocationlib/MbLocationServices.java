@@ -57,15 +57,15 @@ public class MbLocationServices {
 
     public void init(final MbLocationListener mbLocationListener) {
         if (mLocationResolverFragment == null) {
-            MbLocationService mbLocationService = MbLocationService.with(mContext);
+            MbLocationContextService mbLocationContextService = MbLocationContextService.with(mContext);
 
-            mbLocationService.setFastestInterval(FASTESTINTERVAL);
-            mbLocationService.setInterval(INTERVAL);
-            mbLocationService.setPriority(PRIORITY);
-            mbLocationService.setOneFix(isOneFix);
-            mbLocationService.setDisplacement(DISPLACEMENT);
+            mbLocationContextService.setFastestInterval(FASTESTINTERVAL);
+            mbLocationContextService.setInterval(INTERVAL);
+            mbLocationContextService.setPriority(PRIORITY);
+            mbLocationContextService.setOneFix(isOneFix);
+            mbLocationContextService.setDisplacement(DISPLACEMENT);
 
-            mbLocationService.executeService(mbLocationListener);
+            mbLocationContextService.executeService(mbLocationListener);
         } else
             mLocationResolverFragment.executeService(mbLocationListener);
     }

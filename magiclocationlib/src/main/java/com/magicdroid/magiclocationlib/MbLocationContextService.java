@@ -20,9 +20,9 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-class MbLocationService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+class MbLocationContextService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     @SuppressLint("StaticFieldLeak")
-    private static volatile MbLocationService instance;
+    private static volatile MbLocationContextService instance;
     private static long INTERVAL = MbLocationUtil.LOCATION_INTERVAL; //Default
     private static long fastestINTERVAL = MbLocationUtil.LOCATION_FASTEST_INTERVAL; // Default
     private static int PRIORITY = LocationRequest.PRIORITY_HIGH_ACCURACY; // Default
@@ -35,7 +35,7 @@ class MbLocationService implements GoogleApiClient.ConnectionCallbacks, GoogleAp
     private MbLocationListener mbLocationListener;
     private boolean isOneFix;
 
-    private MbLocationService(Context mContext) {
+    private MbLocationContextService(Context mContext) {
         this.mContext = mContext;
         init();
     }
@@ -50,25 +50,25 @@ class MbLocationService implements GoogleApiClient.ConnectionCallbacks, GoogleAp
         mLocationRequest = new LocationRequest();
     }
 
-    public static MbLocationService with(Context context) {
+    public static MbLocationContextService with(Context context) {
         if (instance == null) {
-            synchronized (MbLocationService.class) {
-                instance = new MbLocationService(context.getApplicationContext());
+            synchronized (MbLocationContextService.class) {
+                instance = new MbLocationContextService(context.getApplicationContext());
             }
         }
         return instance;
     }
 
     public void setInterval(long interval) {
-        MbLocationService.INTERVAL = interval;
+        MbLocationContextService.INTERVAL = interval;
     }
 
     public void setFastestInterval(long fastestInterval) {
-        MbLocationService.fastestINTERVAL = fastestInterval;
+        MbLocationContextService.fastestINTERVAL = fastestInterval;
     }
 
     public void setPriority(int priority) {
-        MbLocationService.PRIORITY = priority;
+        MbLocationContextService.PRIORITY = priority;
     }
 
     public void setDisplacement(int displacement) {
@@ -76,7 +76,7 @@ class MbLocationService implements GoogleApiClient.ConnectionCallbacks, GoogleAp
     }
 
     public void setExpiration(long expiration) {
-        MbLocationService.EXPIRATIONTIME = expiration;
+        MbLocationContextService.EXPIRATIONTIME = expiration;
     }
 
     public void executeService(final MbLocationListener mbLocationListener) {

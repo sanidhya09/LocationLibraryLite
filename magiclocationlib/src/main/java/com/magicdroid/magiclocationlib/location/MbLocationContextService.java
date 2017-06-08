@@ -1,4 +1,4 @@
-package com.magicdroid.magiclocationlib;
+package com.magicdroid.magiclocationlib.location;
 
 /**
  * Created by sanidhya on 1/5/17.

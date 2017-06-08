@@ -1,4 +1,4 @@
-package com.magicdroid.magiclocationlib;
+package com.magicdroid.magiclocationlib.location;
 
 
 import android.Manifest;
@@ -27,6 +27,8 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.magicdroid.magiclocationlib.permissions.MbPermissionUtil;
+import com.magicdroid.magiclocationlib.permissions.PermissionCallback;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
@@ -100,7 +102,8 @@ public class MbLocationServices {
 
     // To stop the location updates.
     public void stopLocationUpdates() {
-        mLocationResolverFragment.stopLocationUpdates();
+        if (mLocationResolverFragment != null)
+            mLocationResolverFragment.stopLocationUpdates();
     }
 
     // To get the location only once. Displacement will be ignored.
@@ -111,7 +114,7 @@ public class MbLocationServices {
     public static class LocationResolverFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
         private static final String TAG = "LocationSettings";
         private static final int LOCATION_SETTINGS_REQUEST = 21;
-        private static final int REQUEST_PERMISSION_LOCATION = 22;
+        //    private static final int REQUEST_PERMISSION_LOCATION = 22;
         private GoogleApiClient mGoogleApiClient;
         private LocationRequest mLocationRequest;
         private MbLocationListener mbLocationListener;
@@ -206,13 +209,18 @@ public class MbLocationServices {
         private void checkLocationPermission() {
             if (ActivityCompat.checkSelfPermission(getActivity(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 startLocationUpdates();
-            } else if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), ACCESS_FINE_LOCATION)) {
-                // We've been denied once before. Explain why we need the permission, then ask again.
-                mbLocationListener.onError(new MbLocationError(MbLocationUtil.LOCATION_PERMISSION_ERROR, "Location Permission not available."));
-                requestPermissions(new String[]{ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_LOCATION);
             } else {
-                // We've never asked. Just do it.
-                requestPermissions(new String[]{ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_LOCATION);
+                MbPermissionUtil.checkPermissions(getContext(), new PermissionCallback() {
+                    @Override
+                    public void onPermissionGranted(int index) {
+                        startLocationUpdates();
+                    }
+
+                    @Override
+                    public void onPermissionDenied(int index) {
+                        mbLocationListener.onError(new MbLocationError(MbLocationUtil.LOCATION_PERMISSION_ERROR, "Location Permission not available."));
+                    }
+                }, new String[]{ACCESS_FINE_LOCATION});
             }
         }
 
@@ -270,19 +278,19 @@ public class MbLocationServices {
         }
 
         public void stopLocationUpdates() {
-            LocationServices.FusedLocationApi.removeLocationUpdates(
-                    mGoogleApiClient, this);
+            if (mGoogleApiClient != null)
+                LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
         }
 
-        @Override
-        public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-            if (requestCode == REQUEST_PERMISSION_LOCATION && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startLocationUpdates();
-            } else {
-                // We were not granted permission this time, so don't try to show the contact picker
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-            }
-        }
+//        @Override
+//        public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//            if (requestCode == REQUEST_PERMISSION_LOCATION && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                startLocationUpdates();
+//            } else {
+//                // We were not granted permission this time, so don't try to show the contact picker
+//                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//            }
+//        }
     }
 
 }

@@ -1,4 +1,4 @@
-package com.magicdroid.magiclocationlib;
+package com.magicdroid.magiclocationlib.location;
 
 import android.location.Location;
 
